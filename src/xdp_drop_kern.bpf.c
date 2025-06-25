@@ -1,9 +1,12 @@
-#include "vmlinux.h"
-//#include <linux/bpf.h>
-//#include <linux/if_ether.h>
-//#include <linux/ip.h>
-//#include <linux/udp.h>
+//#include "vmlinux.h"
+#include <linux/bpf.h>
+#include <linux/if_ether.h>
+#include <linux/ip.h>
+#include <linux/udp.h>
 #include <bpf/bpf_helpers.h> // for BPF helper functions
+
+#include <linux/in.h> // IPPROTO_UDP 정의 포함 (주로 여기에 있음)
+#include <bpf/bpf_endian.h> // bpf_htons, bpf_ntohs 등의 BPF 헬퍼 정의
 
 // Define the UDP port to drop
 #define DROP_UDP_PORT 7777

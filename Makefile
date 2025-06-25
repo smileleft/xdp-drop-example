@@ -21,14 +21,14 @@ endif
 # Include files
 LINUX_KERNEL_INCLUDE ?= /usr/src/linux-headers-$(shell uname -r)/include
 KERNEL_INCLUDE_PATH ?= /usr/src/linux-headers-$(shell uname -r)/arch/x86/include
-TYPES_INCLUDE_PATH ?= /home/smileleft/Projects/xdp-drop-example
+ARCH_INCLUDE_PATH := /usr/include/$(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # Output files
 XDP_KERN_OBJ := $(BUILD_DIR)/xdp_drop_kern.bpf.o
 USER_APP_BIN := $(BUILD_DIR)/xdp_drop_user
 
 # Compiler flags
-CLANG_CFLAGS := -g -O2 -target bpf -I/usr/include/bpf -I$(TYPES_INCLUDE_PATH)
+CLANG_CFLAGS := -g -O2 -target bpf -I/usr/include/bpf -I$(ARCH_INCLUDE_PATH)
 LIBCBPF_CFLAGS := -g -Wall
 LIBCBPF_LIBS := -lbfd -lelf -lz # Required for libbpf
 LIBS := $(LIBCBPF_LIBS)
