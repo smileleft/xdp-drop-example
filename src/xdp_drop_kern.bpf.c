@@ -7,18 +7,13 @@
 
 #include <linux/in.h> // IPPROTO_UDP 정의 포함 (주로 여기에 있음)
 #include <bpf/bpf_endian.h> // bpf_htons, bpf_ntohs 등의 BPF 헬퍼 정의
+//#include <bpf/libbpf.h>
 
 // Define the UDP port to drop
 #define DROP_UDP_PORT 7777
 
 // BPF map definition (optional for this simple example, but good practice)
 // This map could be used to pass configuration from userspace to BPF program
-struct bpf_map_def SEC("maps") my_map = {
-    .type = BPF_MAP_TYPE_ARRAY,
-    .key_size = sizeof(int),
-    .value_size = sizeof(int),
-    .max_entries = 1,
-};
 
 SEC("xdp") // Section name for XDP programs
 int xdp_drop_prog(struct xdp_md *ctx) {
@@ -30,6 +25,8 @@ int xdp_drop_prog(struct xdp_md *ctx) {
         return XDP_PASS; // Malformed packet, pass
     }
 
+    bpf_printk("XDP: Packet received. EtherType: 0x%x\n", bpf_htons(eth->h_proto));
+
     // Check if it's an IPv4 packet
     if (eth->h_proto != bpf_htons(ETH_P_IP)) {
         return XDP_PASS; // Not IPv4, pass
@@ -40,15 +37,20 @@ int xdp_drop_prog(struct xdp_md *ctx) {
         return XDP_PASS; // Malformed IP header, pass
     }
 
+    bpf_printk("XDP: Is IPv4. IP Protocol: 0x%x\n", ip->protocol);
+
     // Check if it's a UDP packet
     if (ip->protocol != IPPROTO_UDP) {
         return XDP_PASS; // Not UDP, pass
     }
 
+
     struct udphdr *udp = (void *)(ip + 1);
     if ((void *)(udp + 1) > data_end) {
         return XDP_PASS; // Malformed UDP header, pass
     }
+
+    bpf_printk("XDP: Is UDP. Dest Port: %d\n", bpf_htons(udp->dest));
 
     // Check if destination port matches our DROP_UDP_PORT
     if (bpf_htons(udp->dest) == DROP_UDP_PORT) {
@@ -56,6 +58,7 @@ int xdp_drop_prog(struct xdp_md *ctx) {
         return XDP_DROP; // Drop the packet
     }
 
+    bpf_printk("XDP: Destination port %d (not %d), PASS\n", bpf_htons(udp->dest), DROP_UDP_PORT);
     return XDP_PASS; // Otherwise, pass the packet
 }
 
