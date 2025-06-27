@@ -220,7 +220,8 @@ int main(int argc, char **argv) {
     }
 
     // 3. XDP 프로그램 찾기
-    prog = bpf_object__find_program_by_name(obj, "xdp_drop_prog");
+    //prog = bpf_object__find_program_by_name(obj, "xdp_drop_prog");
+    prog = bpf_object__find_program_by_name(obj, "xdp_minimal_test");
     if (!prog) {
         fprintf(stderr, "ERROR: finding XDP program 'xdp_drop_prog' in %s\n", bpf_file_path);
         bpf_object__close(obj);
